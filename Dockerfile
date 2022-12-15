@@ -4,15 +4,15 @@ WORKDIR /app
 
 COPY go.mod ./
 
-RUN go mod download
+RUN go mod download && go mod verify
 
-COPY *.go ./
+COPY . ./
 
 RUN go build -o /http_router
 
-FROM gcr.io/distroless/base-debian10
+FROM gcr.io/distroless/static-debian11
 
-WORKDIR /
+WORKDIR /http_router
 
 COPY --from=build /http_router /http_router
 
@@ -20,4 +20,4 @@ EXPOSE 8080
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/http_router"]
+CMD ["./http_router"]

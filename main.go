@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
+	router "mateusz/http_router/router"
 	"net/http"
+	"os"
 )
 
 func indexHandler() http.Handler {
@@ -50,7 +54,7 @@ func qweHandler() http.Handler {
 
 func main() {
 
-	r := NewRouter()
+	r := router.NewRouter()
 
 	r.Methods(http.MethodGet).Handler(`/`, indexHandler())
 	r.Methods(http.MethodGet, http.MethodPost).Handler(`/asd`, asdHandler())
@@ -59,5 +63,21 @@ func main() {
 	r.Methods(http.MethodGet).Handler(`/zxc`, zxcHandler())
 	r.Methods(http.MethodGet).Handler(`/qwe`, qweHandler())
 
-	http.ListenAndServe(":8080", r)
+	httpPort := os.Getenv("HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+
+	port := fmt.Sprintf(":%s", httpPort)
+
+	log.Printf("Starting server on http://localhost%s ... \n", port)
+	err := http.ListenAndServe(port, r)
+	// http.ListenAndServe(":8080", r)
+	if errors.Is(err, http.ErrServerClosed) {
+		fmt.Printf("server closed\n")
+	} else if err != nil {
+		fmt.Printf("error starting server: %s\n", err)
+		os.Exit(1)
+	}
+
 }
