@@ -42,7 +42,7 @@ const (
 	pathDelimiter string = "/"
 )
 
-func (t *tree) Insert(methods []string, path string, handler http.Handler) {
+func (t *tree) Insert(methods []string, path string, handler http.Handler) error {
 	curNode := t.node
 	if path == pathRoot {
 		curNode.label = path
@@ -55,6 +55,32 @@ func (t *tree) Insert(methods []string, path string, handler http.Handler) {
 	}
 	ep := explodePath(path)
 
+	for i, p := range ep {
+		nextNode, ok := curNode.children[p]
+		if ok {
+			curNode = nextNode
+		}
+
+		if !ok {
+			curNode.children[p] = &node{
+				label:    p,
+				actions:  make(map[string]*action),
+				children: make(map[string]*node),
+			}
+			curNode = curNode.children[p]
+		}
+
+		if i == len(ep)-1 {
+			curNode.label = p
+			for _, method := range methods {
+				curNode.actions[method] = &action{
+					handler: handler,
+				}
+			}
+			break
+		}
+	}
+	return nil
 }
 
 func explodePath(path string) []string {
