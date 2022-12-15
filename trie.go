@@ -104,8 +104,7 @@ func (t *tree) Search(method string, path string) (*result, error) {
 				if p == curNode.label {
 					break
 				} else {
-					return nil, nil
-					// ErrNotFound
+					return nil, ErrNotFound
 				}
 			}
 			curNode = nextNode
@@ -114,8 +113,7 @@ func (t *tree) Search(method string, path string) (*result, error) {
 	}
 	result.actions = curNode.actions[method]
 	if result.actions == nil {
-		return nil, nil
-		// ErrMethodNotAllowed
+		return nil, ErrMethodNotAllowed
 	}
 	return result, nil
 }
