@@ -93,3 +93,27 @@ func explodePath(path string) []string {
 	}
 	return r
 }
+
+func (t *tree) Search(method string, path string) (*result, error) {
+	result := newResult()
+	curNode := t.node
+	if path != pathRoot {
+		for _, p := range explodePath(path) {
+			nextNode, ok := curNode.children[p]
+			if !ok {
+				if p == curNode.label {
+					break
+				} else {
+					return nil, ErrNotFound
+				}
+			}
+			curNode = nextNode
+			continue
+		}
+	}
+	result.actions = curNode.actions[method]
+	if result.actions == nil {
+		return nil, ErrMethodNotAllowed
+	}
+	return result, nil
+}
