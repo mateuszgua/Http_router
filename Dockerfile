@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine3.16 AS build
+FROM golang:1.19-alpine3.16 AS builder
 
 WORKDIR /app
 
@@ -8,16 +8,16 @@ RUN go mod download && go mod verify
 
 COPY . ./
 
-RUN go build -o /http_router
+RUN CGO_ENABLED=0 go build -a -installsuffix cgo -o /http_router
 
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/base-debian10
 
-WORKDIR /http_router
+WORKDIR /
 
-COPY --from=build /http_router /http_router
+COPY --from=builder /http_router /http_router
 
 EXPOSE 8080
 
 USER nonroot:nonroot
 
-CMD ["./http_router"]
+ENTRYPOINT [ "/http_router" ]
