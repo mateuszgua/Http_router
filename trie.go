@@ -23,6 +23,11 @@ type result struct {
 	actions *action
 }
 
+const (
+	pathRoot      string = "/"
+	pathDelimiter string = "/"
+)
+
 func newResult() *result {
 	return &result{}
 }
@@ -36,11 +41,6 @@ func NewTree() *tree {
 		},
 	}
 }
-
-const (
-	pathRoot      string = "/"
-	pathDelimiter string = "/"
-)
 
 func (t *tree) Insert(methods []string, path string, handler http.Handler) error {
 	curNode := t.node
@@ -104,7 +104,8 @@ func (t *tree) Search(method string, path string) (*result, error) {
 				if p == curNode.label {
 					break
 				} else {
-					return nil, ErrNotFound
+					return nil, nil
+					// ErrNotFound
 				}
 			}
 			curNode = nextNode
@@ -113,7 +114,8 @@ func (t *tree) Search(method string, path string) (*result, error) {
 	}
 	result.actions = curNode.actions[method]
 	if result.actions == nil {
-		return nil, ErrMethodNotAllowed
+		return nil, nil
+		// ErrMethodNotAllowed
 	}
 	return result, nil
 }
