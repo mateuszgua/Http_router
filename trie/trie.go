@@ -1,26 +1,27 @@
-package main
+package trie
 
 import (
+	my_err "mateusz/http_router/errors"
 	"net/http"
 	"strings"
 )
 
-type tree struct {
+type Tree struct {
 	node *node
 }
 
 type node struct {
 	label    string
-	actions  map[string]*action
+	Actions  map[string]*action
 	children map[string]*node
 }
 
 type action struct {
-	handler http.Handler
+	Handler http.Handler
 }
 
 type result struct {
-	actions *action
+	Actions *action
 }
 
 const (
@@ -32,23 +33,23 @@ func newResult() *result {
 	return &result{}
 }
 
-func NewTree() *tree {
-	return &tree{
+func NewTree() *Tree {
+	return &Tree{
 		node: &node{
 			label:    pathRoot,
-			actions:  make(map[string]*action),
+			Actions:  make(map[string]*action),
 			children: make(map[string]*node),
 		},
 	}
 }
 
-func (t *tree) Insert(methods []string, path string, handler http.Handler) error {
+func (t *Tree) Insert(methods []string, path string, handler http.Handler) error {
 	curNode := t.node
 	if path == pathRoot {
 		curNode.label = path
 		for _, method := range methods {
-			curNode.actions[method] = &action{
-				handler: handler,
+			curNode.Actions[method] = &action{
+				Handler: handler,
 			}
 		}
 		return nil
@@ -64,7 +65,7 @@ func (t *tree) Insert(methods []string, path string, handler http.Handler) error
 		if !ok {
 			curNode.children[p] = &node{
 				label:    p,
-				actions:  make(map[string]*action),
+				Actions:  make(map[string]*action),
 				children: make(map[string]*node),
 			}
 			curNode = curNode.children[p]
@@ -73,8 +74,8 @@ func (t *tree) Insert(methods []string, path string, handler http.Handler) error
 		if i == len(ep)-1 {
 			curNode.label = p
 			for _, method := range methods {
-				curNode.actions[method] = &action{
-					handler: handler,
+				curNode.Actions[method] = &action{
+					Handler: handler,
 				}
 			}
 			break
@@ -94,7 +95,7 @@ func explodePath(path string) []string {
 	return r
 }
 
-func (t *tree) Search(method string, path string) (*result, error) {
+func (t *Tree) Search(method string, path string) (*result, error) {
 	result := newResult()
 	curNode := t.node
 	if path != pathRoot {
@@ -104,16 +105,16 @@ func (t *tree) Search(method string, path string) (*result, error) {
 				if p == curNode.label {
 					break
 				} else {
-					return nil, ErrNotFound
+					return nil, my_err.ErrNotFound
 				}
 			}
 			curNode = nextNode
 			continue
 		}
 	}
-	result.actions = curNode.actions[method]
-	if result.actions == nil {
-		return nil, ErrMethodNotAllowed
+	result.Actions = curNode.Actions[method]
+	if result.Actions == nil {
+		return nil, my_err.ErrMethodNotAllowed
 	}
 	return result, nil
 }

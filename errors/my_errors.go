@@ -1,4 +1,4 @@
-package main
+package errors
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ var (
 	ErrMethodNotAllowed = errors.New("methods is not allowed")
 )
 
-func handleErr(err error) int {
+func HandleErr(err error) int {
 	var status int
 	switch err {
 	case ErrMethodNotAllowed:

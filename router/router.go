@@ -1,11 +1,13 @@
-package main
+package route
 
 import (
+	my_err "mateusz/http_router/errors"
+	trie "mateusz/http_router/trie"
 	"net/http"
 )
 
 type Router struct {
-	tree *tree
+	tree *trie.Tree
 }
 
 type route struct {
@@ -16,7 +18,7 @@ type route struct {
 
 func NewRouter() *Router {
 	return &Router{
-		tree: NewTree(),
+		tree: trie.NewTree(),
 	}
 }
 
@@ -44,10 +46,10 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	result, err := r.tree.Search(method, path)
 	if err != nil {
-		status := handleErr(err)
+		status := my_err.HandleErr(err)
 		w.WriteHeader(status)
 		return
 	}
-	h := result.actions.handler
+	h := result.Actions.Handler
 	h.ServeHTTP(w, req)
 }
